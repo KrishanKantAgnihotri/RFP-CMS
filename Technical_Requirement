@@ -1,0 +1,151 @@
+{
+    "project": "RFP Contract Management System",
+    "objective": "Build a production-ready full-stack RFP contract management system with AI-assisted development.",
+    "time_allocation": "2 hours (with AI assistance)",
+    "requirements": {
+      "core_features": {
+        "user_management": {
+          "registration": true,
+          "role_selection": ["Buyer", "Supplier"],
+          "authentication": "JWT",
+          "role_based_access_control": true
+        },
+        "rfp_lifecycle": {
+          "buyer_actions": ["create_rfp", "publish_rfp", "review_responses", "approve_reject_responses"],
+          "supplier_actions": ["browse_rfps", "submit_responses"],
+          "workflow_states": ["Draft", "Published", "Response Submitted", "Under Review", "Approved", "Rejected"]
+        },
+        "document_management": {
+          "file_upload": true,
+          "indexing_search": true,
+          "version_control": true
+        },
+        "notifications": {
+          "status_change_emails": true,
+          "supplier_new_rfp": true,
+          "buyer_response_alert": true
+        },
+        "dashboard_ui": {
+          "role_specific_dashboards": true,
+          "responsive_design": true,
+          "real_time_updates": true
+        }
+      },
+      "technical": {
+        "backend_options": [
+          {"stack": "Python", "frameworks": ["FastAPI", "Django"], "language": "Python 3.9+"}
+        ],
+        "database_options": ["MongoDB"],
+        "frontend_options": ["React+TypeScript"],
+        "integrations": {
+          "email_service": ["SendGrid", "Mailgun", "AWS SES"],
+          "file_storage": ["AWS S3", "Cloudinary", "Local"],
+          "search": ["Elasticsearch", "Algolia", "Database Full-Text Search"]
+        }
+      },
+      "ai_usage": [
+        "code_generation_boilerplate",
+        "ui_ux_design_assistance",
+        "database_schema_design",
+        "api_documentation",
+        "testing_strategy"
+      ],
+      "deliverables": {
+        "working_application": {
+          "deployment": ["Vercel", "Netlify", "Railway", "Other"],
+          "github_repository": true,
+          "setup_instructions": true
+        },
+        "demo": {
+          "features": [
+            "user_registration_login",
+            "buyer_create_rfp_with_upload",
+            "supplier_browse_and_respond",
+            "search_rfps",
+            "email_notification_system",
+            "status_workflow_management"
+          ]
+        },
+        "documentation": [
+          "README.md",
+          "SetUp_Guide.md",
+          "API documentation (Swagger/OpenAPI)",
+          "Database schema diagram or description",
+          "AI usage report",
+          "Productionization_guide.md"
+        ],
+        "design_ux": {
+          "professional_ui": true,
+          "mobile_responsive": true,
+          "intuitive_experience": true,
+          "error_loading_states": true
+        },
+        "scripts": {
+          "location": "scripts/",
+          "description": "A folder containing all shell/command scripts to run, build, test, and deploy the project.",
+          "example_files": ["start.sh", "build.sh", "test.sh", "deploy.sh"]
+        }
+      },
+      "evaluation_criteria": {
+        "technical_excellence": 40,
+        "product_completeness": 30,
+        "design_ux": 20,
+        "ai_utilization": 10,
+        "bonus": [
+          "websockets_real_time_updates",
+          "advanced_search_filters_facets",
+          "document_preview",
+          "audit_trail_logging",
+          "docker_containerization",
+          "comprehensive_testing",
+          "performance_optimization"
+        ]
+      },
+      "submission": {
+        "required": [
+          "github_repo_url",
+          "live_demo_url",
+          "ai_usage_report",
+          "architecture_overview"
+        ],
+        "repository_structure": [
+          "README.md",
+          "SetUp_Guide.md",
+          "frontend/",
+          "backend/",
+          "docs/api-docs.md",
+          "docs/database-schema.md",
+          "docs/Productionization_guide.md",
+          "deployment/",
+          "scripts/"
+        ],
+        "demo_accounts": {
+          "buyer": {"email": "buyer@test.com", "password": "password123"},
+          "supplier": {"email": "supplier@test.com", "password": "password123"}
+        }
+      },
+      "constraints": {
+        "modern_technologies": true,
+        "error_handling": true,
+        "security_best_practices": true,
+        "mobile_responsiveness": true,
+        "document_ai_usage": true,
+        "portable_zip_execution": true
+      },
+      "success_indicators": [
+        "full_stack_proficiency",
+        "complete_user_workflows",
+        "ai_productivity",
+        "production_quality",
+        "clear_documentation",
+        "runs_on_any_machine_from_zip"
+      ],
+      "important_notes": {
+        "portability": "The project must be deliverable as a ZIP file, runnable on any machine with minimal setup.",
+        "setup_guide": "Include a document (SetUp_Guide.md) with step-by-step setup instructions.",
+        "productionization": "Include a document (Productionization_guide.md) describing how to use, deploy, and scale the system in production.",
+        "scripts": "Provide a folder (scripts/) with all required run/build/test/deploy scripts to simplify execution."
+      }
+    }
+  }
+  
