@@ -2,11 +2,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
+
+from app.db.mongodb import Database
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await Database.connect_to_database()
+    yield
+    # Shutdown
+    await Database.close_database_connection()
 
 app = FastAPI(
     title="RFP Contract Management System",
     description="API for managing RFP contracts",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Configure CORS

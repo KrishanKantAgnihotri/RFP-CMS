@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -20,22 +20,26 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import { RFP } from '../../types';
 
-const CreateRFPPage: React.FC = () => {
+const EditRFPPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [rfp, setRfp] = useState<RFP | null>(null);
 
   const formik = useFormik({
     initialValues: {
       title: '',
       description: '',
       requirements: '',
-      submission_deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      submission_deadline: new Date(),
       budget: '',
       categories: [],
       evaluation_criteria: '',
@@ -54,7 +58,7 @@ const CreateRFPPage: React.FC = () => {
     }),
     onSubmit: async (values) => {
       if (user?.role !== 'Buyer') {
-        setError('Only buyers can create RFPs');
+        setError('Only buyers can edit RFPs');
         return;
       }
 
@@ -67,26 +71,59 @@ const CreateRFPPage: React.FC = () => {
           budget: values.budget ? parseFloat(values.budget) : null,
         };
         
-        const response = await api.post('/rfps', rfpData);
-        navigate(`/rfps/${response.data.id}`);
+        await api.put(`/rfps/${id}`, rfpData);
+        navigate(`/rfps/${id}`);
       } catch (err: any) {
-        console.error('Failed to create RFP:', err);
+        console.error('Failed to update RFP:', err);
         if (err.response?.data?.detail) {
           if (typeof err.response.data.detail === 'string') {
             setError(err.response.data.detail);
           } else if (Array.isArray(err.response.data.detail)) {
             setError(err.response.data.detail.map((e: any) => e.msg).join(', '));
           } else {
-            setError('Failed to create RFP. Please check your information.');
+            setError('Failed to update RFP. Please check your information.');
           }
         } else {
-          setError('Failed to create RFP. Please try again.');
+          setError('Failed to update RFP. Please try again.');
         }
       } finally {
         setLoading(false);
       }
     },
   });
+
+  useEffect(() => {
+    const fetchRFP = async () => {
+      if (!id) return;
+      
+      try {
+        setFetchLoading(true);
+        const response = await api.get(`/rfps/${id}`);
+        const rfpData = response.data;
+        setRfp(rfpData);
+        
+        // Populate form with existing data
+        formik.setValues({
+          title: rfpData.title || '',
+          description: rfpData.description || '',
+          requirements: rfpData.requirements || '',
+          submission_deadline: new Date(rfpData.submission_deadline),
+          budget: rfpData.budget ? rfpData.budget.toString() : '',
+          categories: rfpData.categories || [],
+          evaluation_criteria: rfpData.evaluation_criteria || '',
+          terms_conditions: rfpData.terms_conditions || '',
+          status: rfpData.status || 'draft',
+        });
+      } catch (err: any) {
+        console.error('Failed to fetch RFP:', err);
+        setError('Failed to load RFP data. Please try again.');
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    fetchRFP();
+  }, [id]);
 
   const categoryOptions = [
     'Technology',
@@ -106,12 +143,39 @@ const CreateRFPPage: React.FC = () => {
     formik.setFieldValue('categories', typeof value === 'string' ? value.split(',') : value);
   };
 
-  if (user?.role !== 'Buyer') {
+  // Check if user can edit this RFP
+  const canEdit = user?.role === 'Buyer' && rfp?.buyer_id === user?.id;
+
+  if (fetchLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!rfp) {
     return (
       <Box>
-        <Alert severity="error">
-          Only buyers can create RFPs. Please contact support if you believe this is an error.
+        <Alert severity="error" sx={{ mb: 3 }}>
+          RFP not found or you don't have permission to edit it.
         </Alert>
+        <Button onClick={() => navigate('/rfps')} variant="outlined">
+          Back to RFPs
+        </Button>
+      </Box>
+    );
+  }
+
+  if (!canEdit) {
+    return (
+      <Box>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          You don't have permission to edit this RFP.
+        </Alert>
+        <Button onClick={() => navigate(`/rfps/${id}`)} variant="outlined">
+          Back to RFP
+        </Button>
       </Box>
     );
   }
@@ -121,9 +185,9 @@ const CreateRFPPage: React.FC = () => {
       <Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
           <Typography variant="h4" component="h1">
-            Create New RFP
+            Edit RFP
           </Typography>
-          <Button onClick={() => navigate('/rfps')} variant="outlined">
+          <Button onClick={() => navigate(`/rfps/${id}`)} variant="outlined">
             Cancel
           </Button>
         </Box>
@@ -196,7 +260,7 @@ const CreateRFPPage: React.FC = () => {
                       fullWidth: true,
                       error: formik.touched.submission_deadline && Boolean(formik.errors.submission_deadline),
                       helperText: formik.touched.submission_deadline && formik.errors.submission_deadline 
-                        ? String(formik.errors.submission_deadline) 
+                        ? String(formik.errors.submission_deadline)
                         : undefined,
                       required: true,
                     },
@@ -287,6 +351,8 @@ const CreateRFPPage: React.FC = () => {
                   >
                     <MenuItem value="draft">Draft</MenuItem>
                     <MenuItem value="published">Published</MenuItem>
+                    <MenuItem value="closed">Closed</MenuItem>
+                    <MenuItem value="awarded">Awarded</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -296,7 +362,7 @@ const CreateRFPPage: React.FC = () => {
                   <Button
                     type="button"
                     variant="outlined"
-                    onClick={() => navigate('/rfps')}
+                    onClick={() => navigate(`/rfps/${id}`)}
                   >
                     Cancel
                   </Button>
@@ -306,7 +372,7 @@ const CreateRFPPage: React.FC = () => {
                     color="primary"
                     disabled={loading}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Create RFP'}
+                    {loading ? <CircularProgress size={24} /> : 'Update RFP'}
                   </Button>
                 </Box>
               </Grid>
@@ -318,4 +384,4 @@ const CreateRFPPage: React.FC = () => {
   );
 };
 
-export default CreateRFPPage;
+export default EditRFPPage;

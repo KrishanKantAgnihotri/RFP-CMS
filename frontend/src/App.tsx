@@ -14,15 +14,17 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import RFPListPage from './pages/rfp/RFPListPage';
 import RFPDetailPage from './pages/rfp/RFPDetailPage';
 import CreateRFPPage from './pages/rfp/CreateRFPPage';
+import EditRFPPage from './pages/rfp/EditRFPPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Route guards
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner message="Authenticating..." />;
   }
 
   return isAuthenticated ? element : <Navigate to="/login" />;
@@ -32,7 +34,7 @@ const PublicRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => 
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner message="Authenticating..." />;
   }
 
   return isAuthenticated ? <Navigate to="/dashboard" /> : element;
@@ -71,6 +73,10 @@ const App: React.FC = () => {
         <Route
           path="rfps/create"
           element={<PrivateRoute element={<CreateRFPPage />} />}
+        />
+        <Route
+          path="rfps/:id/edit"
+          element={<PrivateRoute element={<EditRFPPage />} />}
         />
         <Route
           path="profile"

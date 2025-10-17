@@ -11,9 +11,13 @@ from app.core.auth import (
     get_current_user,
 )
 from app.schemas.user import UserCreate, UserUpdate, UserResponse, Token
-from app.db.mongodb import users_collection
+from app.db.mongodb import users_collection, Database
 
 router = APIRouter()
+
+@router.get("/test")
+async def test_endpoint():
+    return {"message": "Users endpoint is working", "db_connected": Database.db is not None}
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user_in: UserCreate):
@@ -26,16 +30,27 @@ async def register_user(user_in: UserCreate):
         )
     
     # Create new user
+    from datetime import datetime
     hashed_password = get_password_hash(user_in.password)
-    user_data = user_in.dict(exclude={"password"})
+    user_data = user_in.model_dump(exclude={"password"})
     user_data["hashed_password"] = hashed_password
+    user_data["is_active"] = True
+    user_data["is_verified"] = False
+    user_data["created_at"] = datetime.utcnow()
+    user_data["updated_at"] = datetime.utcnow()
     
     result = await users_collection().insert_one(user_data)
     
     # Fetch the created user
     created_user = await users_collection().find_one({"_id": result.inserted_id})
     
-    return created_user
+    # Convert ObjectId to string for the response
+    user_response = {**created_user}
+    user_response["id"] = str(created_user["_id"])
+    del user_response["_id"]
+    del user_response["hashed_password"]
+    
+    return user_response
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -72,6 +87,7 @@ async def get_current_user_info(current_user: Dict[str, Any] = Depends(get_curre
     # Convert ObjectId to string for the response
     user_response = {**current_user}
     user_response["id"] = str(current_user["_id"])
+    
     del user_response["_id"]
     del user_response["hashed_password"]
     
@@ -83,7 +99,7 @@ async def update_user(
     current_user: Dict[str, Any] = Depends(get_current_user),
 ):
     # Update user
-    user_data = user_update.dict(exclude_unset=True)
+    user_data = user_update.model_dump(exclude_unset=True)
     
     if user_data:
         await users_collection().update_one(

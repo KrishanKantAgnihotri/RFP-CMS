@@ -16,17 +16,21 @@ class Database:
     async def connect_to_database(cls):
         try:
             logger.info("Connecting to MongoDB...")
-            cls.client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGODB_URL)
+            cls.client = motor.motor_asyncio.AsyncIOMotorClient(
+                settings.MONGODB_URL,
+                tls=True,
+                tlsAllowInvalidCertificates=True
+            )
             cls.db = cls.client[settings.MONGODB_DB_NAME]
             logger.info("Connected to MongoDB")
-            
+
             # Verify connection is working
             await cls.db.command("ping")
             return cls.db
         except ServerSelectionTimeoutError:
             logger.error("Cannot connect to MongoDB")
             raise
-    
+        
     @classmethod
     async def close_database_connection(cls):
         if cls.client:
@@ -40,7 +44,7 @@ class Database:
 
 # For synchronous operations (if needed)
 def get_sync_client():
-    return MongoClient(settings.MONGODB_URL)
+    return MongoClient(settings.MONGODB_URL,tls=True, tlsAllowInvalidCertificates=True)
 
 # Database collections
 def users_collection():

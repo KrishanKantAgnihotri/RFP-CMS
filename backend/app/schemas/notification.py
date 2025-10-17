@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 
@@ -8,7 +8,8 @@ class NotificationBase(BaseModel):
     message: str
     data: Dict[str, Any] = {}
     
-    @validator('type')
+    @field_validator('type')
+    @classmethod
     def validate_type(cls, v):
         if v not in ["email", "in_app", "sms"]:
             raise ValueError('Type must be one of: email, in_app, sms')
@@ -33,7 +34,7 @@ class NotificationInDB(NotificationBase):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class NotificationResponse(NotificationInDB):
     pass

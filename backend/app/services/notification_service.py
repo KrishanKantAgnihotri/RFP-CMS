@@ -100,7 +100,7 @@ class NotificationService:
     async def _send_with_aws_ses(to_email: str, subject: str, html_content: str) -> bool:
         """Send email using AWS SES"""
         # This is a simplified implementation
-        # In production, we would use boto3 or a similar library
+        # In production, you would use boto3 or a similar library
         try:
             # Create message
             msg = MIMEMultipart()

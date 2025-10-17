@@ -1,14 +1,17 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 class RFPBase(BaseModel):
     title: str
     description: str
-    requirements: Dict[str, Any]
-    deadline: Optional[datetime] = None
-    category: Optional[str] = None
-    tags: List[str] = []
+    requirements: str
+    submission_deadline: datetime
+    budget: Optional[float] = None
+    categories: Optional[List[str]] = []
+    evaluation_criteria: str
+    terms_conditions: Optional[str] = None
+    status: Optional[str] = "draft"
 
 class RFPCreate(RFPBase):
     pass
@@ -16,22 +19,24 @@ class RFPCreate(RFPBase):
 class RFPUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    requirements: Optional[Dict[str, Any]] = None
-    deadline: Optional[datetime] = None
-    category: Optional[str] = None
-    tags: Optional[List[str]] = None
+    requirements: Optional[str] = None
+    submission_deadline: Optional[datetime] = None
+    budget: Optional[float] = None
+    categories: Optional[List[str]] = None
+    evaluation_criteria: Optional[str] = None
+    terms_conditions: Optional[str] = None
     status: Optional[str] = None
     
-    @validator('status')
+    @field_validator('status')
+    @classmethod
     def validate_status(cls, v):
-        if v not in ["Draft", "Published", "Under Review", "Completed", "Cancelled"]:
-            raise ValueError('Status must be one of: Draft, Published, Under Review, Completed, Cancelled')
+        if v not in ["draft", "published", "closed", "awarded"]:
+            raise ValueError('Status must be one of: draft, published, closed, awarded')
         return v
 
 class RFPInDB(RFPBase):
     id: str
     buyer_id: str
-    status: str
     attachments: List[str] = []
     responses: List[str] = []
     created_at: datetime
@@ -39,7 +44,7 @@ class RFPInDB(RFPBase):
     published_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class RFPResponse(RFPInDB):
     pass
@@ -55,7 +60,8 @@ class RFPResponseUpdate(BaseModel):
     status: Optional[str] = None
     feedback: Optional[str] = None
     
-    @validator('status')
+    @field_validator('status')
+    @classmethod
     def validate_status(cls, v):
         if v not in ["Submitted", "Under Review", "Approved", "Rejected"]:
             raise ValueError('Status must be one of: Submitted, Under Review, Approved, Rejected')
@@ -72,7 +78,7 @@ class RFPResponseInDB(RFPResponseBase):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class RFPResponseResponse(RFPResponseInDB):
     pass

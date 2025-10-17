@@ -3,14 +3,14 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  first_name?: string;
-  last_name?: string;
-  role: string;
-  company_name?: string;
+  first_name: string;
+  last_name: string;
+  role: 'Buyer' | 'Supplier';
+  company_name: string;
   is_active: boolean;
   is_verified: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface UserRegister {
@@ -34,16 +34,16 @@ export interface RFP {
   title: string;
   description: string;
   buyer_id: string;
-  requirements: Record<string, any>;
-  attachments: string[];
-  status: 'Draft' | 'Published' | 'Under Review' | 'Completed' | 'Cancelled';
-  deadline?: string;
-  category?: string;
-  tags: string[];
-  responses: string[];
+  requirements: string;
+  submission_deadline: string;
+  budget?: number;
+  categories?: string[];
+  evaluation_criteria?: string;
+  terms_conditions?: string;
+  status: 'draft' | 'published' | 'closed' | 'awarded';
+  attachments?: string[];
   created_at: string;
   updated_at: string;
-  published_at?: string;
 }
 
 export interface RFPCreate {
@@ -70,9 +70,10 @@ export interface RFPResponse {
   id: string;
   rfp_id: string;
   supplier_id: string;
-  content: Record<string, any>;
-  attachments: string[];
-  status: 'Submitted' | 'Under Review' | 'Approved' | 'Rejected';
+  supplier_company?: string;
+  proposal_text: string;
+  attachments?: string[];
+  status: 'submitted' | 'under_review' | 'approved' | 'rejected';
   feedback?: string;
   created_at: string;
   updated_at: string;

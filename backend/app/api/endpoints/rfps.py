@@ -16,6 +16,38 @@ from app.db.mongodb import rfps_collection, users_collection
 
 router = APIRouter()
 
+@router.get("/stats")
+async def get_rfp_stats(current_user: Dict[str, Any] = Depends(get_current_user)):
+    """Get RFP statistics for the current user"""
+    user_id = current_user["_id"]
+    
+    # Count RFPs based on user role
+    if current_user["role"] == "Buyer":
+        # For buyers, count their own RFPs
+        total_rfps = await rfps_collection().count_documents({"buyer_id": user_id})
+        active_rfps = await rfps_collection().count_documents({
+            "buyer_id": user_id, 
+            "status": {"$in": ["published", "draft"]}
+        })
+        completed_rfps = await rfps_collection().count_documents({
+            "buyer_id": user_id, 
+            "status": {"$in": ["closed", "awarded"]}
+        })
+        pending_responses = 0  # TODO: Implement response counting
+    else:
+        # For suppliers, count all published RFPs they can respond to
+        total_rfps = await rfps_collection().count_documents({"status": "published"})
+        active_rfps = await rfps_collection().count_documents({"status": "published"})
+        completed_rfps = 0  # Suppliers don't own RFPs
+        pending_responses = 0  # TODO: Implement response counting
+    
+    return {
+        "total_rfps": total_rfps,
+        "active_rfps": active_rfps,
+        "pending_responses": pending_responses,
+        "completed_rfps": completed_rfps,
+    }
+
 @router.post("/", response_model=RFPResponse, status_code=status.HTTP_201_CREATED)
 async def create_rfp(
     rfp_in: RFPCreate,
@@ -29,9 +61,8 @@ async def create_rfp(
         )
     
     # Create new RFP
-    rfp_data = rfp_in.dict()
+    rfp_data = rfp_in.model_dump()
     rfp_data["buyer_id"] = current_user["_id"]
-    rfp_data["status"] = "Draft"
     rfp_data["created_at"] = datetime.utcnow()
     rfp_data["updated_at"] = datetime.utcnow()
     rfp_data["attachments"] = []
@@ -219,7 +250,7 @@ async def create_rfp_response(
         )
     
     # Create new response
-    response_data = response_in.dict()
+    response_data = response_in.model_dump()
     response_data["rfp_id"] = ObjectId(rfp_id)
     response_data["supplier_id"] = current_user["_id"]
     response_data["status"] = "Submitted"

@@ -153,7 +153,7 @@ const MainLayout: React.FC = () => {
             </IconButton>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt={user?.username || 'User'}>
+                <Avatar alt={user?.first_name || user?.username || 'User'}>
                   {user?.first_name?.[0] || user?.username?.[0] || 'U'}
                 </Avatar>
               </IconButton>
